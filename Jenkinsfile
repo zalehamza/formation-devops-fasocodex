@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        IMAGE   = 'zalehamza/finance-service-portal'
         VERSION = '1.0.0'
     }
 
@@ -37,8 +38,7 @@ pipeline {
         stage('Build image') {
             steps {
                 sh '''
-                    docker build -t fasocodex/finance-service-portal:$VERSION \
-                                 -t fasocodex/finance-service-portal:latest .
+                    docker build -t $IMAGE:$VERSION .
                 '''
             }
         }
@@ -52,8 +52,8 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$PASS" | docker login -u "$USER" --password-stdin
-                        docker push zalehamza/finance-service-portal:$VERSION
-                        docker push zalehamza/finance-service-portal:latest
+                        docker push $IMAGE:$VERSION
+                        docker push $IMAGE:latest
                     '''
                 }
             }
@@ -61,7 +61,7 @@ pipeline {
     }
 
     post {
-        success { echo "✅ Pipeline OK — version $VERSION" }
+        success { echo "✅ Pipeline OK — $IMAGE:$VERSION" }
         failure { echo '❌ Pipeline KO' }
         always  {
             sh 'docker logout || true'

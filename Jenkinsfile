@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE   = 'zalehamza/finance-service-portal'
         VERSION = '1.0.0'
+        APP_DIR = 'python-practise/finance-service-portal'
     }
 
     stages {
@@ -15,31 +16,38 @@ pipeline {
 
         stage('Setup') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install -q pytest ruff
-                '''
+                dir("${APP_DIR}") {
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -q -r requirements.txt
+                        pip install -q pytest ruff
+                    '''
+                }
             }
         }
 
         stage('Lint') {
             steps {
-                sh '. venv/bin/activate && ruff check .'
+                dir("${APP_DIR}") {
+                    sh '. venv/bin/activate && ruff check .'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                sh '. venv/bin/activate && pytest -v'
+                dir("${APP_DIR}") {
+                    sh '. venv/bin/activate && pytest -v'
+                }
             }
         }
 
         stage('Build image') {
             steps {
-                sh '''
-                    docker build -t $IMAGE:$VERSION .
-                '''
+                dir("${APP_DIR}") {
+                    sh 'docker build -t $IMAGE:$VERSION -t $IMAGE:latest .'
+                }
             }
         }
 
